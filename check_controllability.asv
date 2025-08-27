@@ -1,0 +1,67 @@
+function [Co, detCo, is_ctrl] = check_controllability(A, B, n)
+% CHECK_CONTROLLABILITY  Test di Kalman (controllabilità) con stampa risultati.
+%
+% INPUT
+%   A : matrice di stato (n x n)
+%   B : matrice di ingresso (n x m)  -- m può essere 1 o >1
+%   n : dimensione dello stato (numero di stati)
+%
+% OUTPUT
+%   Co     : matrice di controllabilità [B  AB  A^2B ... A^(n-1)B]
+%   detCo  : determinante di Co se m=1, altrimenti NaN
+%   is_ctrl: true se controllabile (detCo ~= 0 per m=1, oppure rank(Co)=n)
+%
+% NOTE
+%   - Per sistemi SISO (m=1), il test classico usa det(Co) ~= 0.
+%   - Per sistemi multi-ingresso (m>1) il determinante non si applica
+%     (Co è n x (n*m)), quindi si usa il test di rango: rank(Co) == n.
+
+    % --- controlli di base
+    if size(A,1) ~= n || size(A,2) ~= n
+        error('A deve essere %d x %d.', n, n);
+    end
+    if size(B,1) ~= n
+        error('B deve avere %d righe.', n);
+    end
+
+    % --- costruzione Co = [B, A*B, A^2*B, ..., A^(n-1)*B]
+    Co = B;
+    Ak = eye(n);
+    for k = 2:n
+        Ak = Ak * A;
+        Co = [Co, Ak * B]; %#ok<AGROW>
+    end
+
+    % --- stampa matrice di controllabilità
+    disp('Matrice di controllabilità Co = [B  AB  A^2B ... A^{n-1}B]:');
+    disp(Co);
+
+    m = size(B,2);
+    rankCo = NaN;
+    is_ctrl = false;
+
+    if m == 1
+        % --- test con determinante (SISO)
+        rankCo = rank(Co);
+        fprintf("Rango della matrice di controllablità: ");
+        disp(rankCo); 
+
+        tol = 1e-9;  % tolleranza numerica
+        if abs(detCo) > tol
+            is_ctrl = true;
+            fprintf('Controllabilita'' soddisfatta (det(Co) != 0).\n');
+        else
+            fprintf('Controllabilita'' NON soddisfatta (det(Co) ~ 0).\n');
+        end
+    else
+        % --- test con rango (MIMO)
+        r = rank(Co);
+        fprintf('rank(Co) = %d (su n = %d)\n', r, n);
+        if r == n
+            is_ctrl = true;
+            fprintf('Controllabilita'' soddisfatta (rank(Co) == n).\n');
+        else
+            fprintf('Controllabilita'' NON soddisfatta (rank(Co) < n).\n');
+        end
+    end
+end

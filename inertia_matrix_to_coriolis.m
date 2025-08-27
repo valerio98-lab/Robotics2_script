@@ -16,7 +16,7 @@ function [c, C] = inertia_matrix_to_coriolis(M, q, dq)
         % Compute Christoffel matrix for the i-th joint
         disp(['Christoffel matrix for joint ', num2str(i)])
         Mi = M(:, i); % Select the i-th column of the inertia matrix
-        Ci = (1/2) * (jacobian(Mi, q) + jacobian(Mi, q)' - diff(M, q(i)));
+        Ci = (1/2) * (jacobian(Mi, q) + jacobian(Mi, q).' - diff(M, q(i)));
         C{i} = Ci; % Store the Christoffel matrix
         
         % Display the Christoffel matrix

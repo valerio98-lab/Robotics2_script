@@ -14,6 +14,10 @@ function [w, v, vc, T] = moving_frames_algorithm(num_joints, DH, qdots, m,  rc, 
     %
     % rc = a vector containing the values ^ir_{ci} that is the distance
     % between the i-th CoM from the i-th reference frame
+    % rc1 = [-l1+dc1; 0; 0];
+    % rc2 = [-l2+dc2; 0; 0];
+    % rc3 = [-l3+dc3; 0; 0];
+    % rc = [rc1, rc2, rc3]; 
     %
     % prismatic indices= a list containing the list of prismatic indices,
     % ex for a PPR= [1,2]
@@ -81,7 +85,7 @@ function [w, v, vc, T] = moving_frames_algorithm(num_joints, DH, qdots, m,  rc, 
         
         wi=R.'*(w_prev + (1- sigma)*[0;0;qdots(i)]);
         fprintf("\nThe value of W_%d is:\n", i);
-        fprintf_vec(wi);
+        fprintf_vec(simplify(wi));
         w(:,i)= wi; 
         
         % computing v
@@ -93,19 +97,19 @@ function [w, v, vc, T] = moving_frames_algorithm(num_joints, DH, qdots, m,  rc, 
         
         vi=R.'*(v_prev + sigma*[0;0;qdots(i)])+ cross(wi,r_i,1);
         fprintf("\nThe value of V_%d is:\n", i);
-        fprintf_vec(vi);
+        fprintf_vec(simplify(vi));
         v(:,i) = vi;
 
         %computing vc
         vci=vi+cross(wi,rc(:,i));
         fprintf("\nThe value of Vc_%d is:\n", i);
-        fprintf_vec(vci);
+        fprintf_vec(simplify(vci));
         vc(:,i)=vci;
 
         %computing T
         Ti=simplify(0.5*m(i)*(vci'*vci)+0.5*wi'*In*wi);
         fprintf('\nThe value of T_%d is:\n', i);
-        fprintf_vec(Ti);
+        fprintf_vec(simplify(Ti));
         T{i}=Ti;
         disp("")
     
