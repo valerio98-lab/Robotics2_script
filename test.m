@@ -46,3 +46,39 @@ disp(theta_star);
 disp(q_star); 
 disp(det(H));
 
+
+%% dinamica 2R con Payload aggiunto: 
+
+syms q1 q2 l1 dc1 dc2 dq1 dq2 Ic1 Ic2 m1 m2 ddq1 ddq2 real
+A1 = DHmatrix(0, l1, 0, q1, true);
+A2 = DHmatrix(0, dc2, 0, q2, true);
+disp(simplify(A1*A2))
+T = simplify(A1*A2);
+pc2_dot = [-l1*sin(q1)*dq1 - sin(q1+q2)*dc2*(dq1+dq2); 
+    l1*cos(q1)*dq1 + cos(q1+q2)*dc2*(dq1+dq2)]; 
+T2 = (pc2_dot.'*pc2_dot); 
+T2 = simplify(T2);
+disp(T2);
+
+%pc3, usa stesso sistema di riferimento del secondo COM ma in posizione
+%"avanzata", quindi: 
+
+A1 = DHmatrix(0, l1, 0, q1, true);
+A2 = DHmatrix(0, l2+dc3, 0, q2, true);
+disp(simplify(A1*A2))
+T = simplify(A1*A2);
+pc3_dot = [-sin(q1+q2)*(dc3+l2)*(dq1+dq2)-l1*cos(q1)*dq1; 
+    cos(q1+q2)*(dc3+l2)*(dq1+dq2)+l1*cos(q1)*dq1]; 
+
+T3 = collect(expand(pc3_dot.'*pc3_dot), [dq1^2, dq2^2, dq1*dq2]); 
+T1 = 0.5*(Ic1+m1*dc1^2)*dq1^2; 
+T2 = 0.5*(dq1^2*(Ic2+m2*dc2^2+l1^2+2*cos(q2)*dc2*l1) + dq2^2*(Ic2+m2*dc2^2)+dq1*dq2*(2*dc2^2+2*cos(q2)*dc2*l1+Ic2));
+T_kin = T1+T2; 
+M = inertia_matrix_from_kinetic_energy(T_kin, [dq1;dq2]);
+disp(M)
+[c, C] = inertia_matrix_to_coriolis(M, [dq1;dq2], [ddq1;ddq2]);
+
+
+syms w t real
+a = int(sin(w*t),0,t); 
+disp(a)
